@@ -1,0 +1,13 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.example.demo_filter">
+    <uses-feature android:name="android.hardware.camera.ar"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-feature android:glEsVersion="0x00030001" android:required="true"/>
+    <application>
+        <!-- Indicates that app requires ARCore ("AR Required"). Causes Google
+             Play Store to download and install ARCore when the app is installed.
+        -->
+        <meta-data android:name="com.google.ar.core" android:value="required" />
+    </application>
+</manifest>
