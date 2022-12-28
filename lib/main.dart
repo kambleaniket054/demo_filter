@@ -1,10 +1,10 @@
-import 'package:camera/camera.dart';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:demo_filter/demo_facecontroller.dart';
 import 'package:flutter/services.dart';
 import 'package:demo_filter/demo_filter.dart';
-late List<CameraDescription> _camera;
+
 void main() async{
 WidgetsFlutterBinding.ensureInitialized();
 //_camera = await availableCameras();
@@ -74,9 +74,17 @@ int count = 0;
           children: [
 
             DemoFilter(
-          ondemo_facecontroller: (Demofacecontroller conroler){
+          ondemo_facecontroller: (Demofacecontroller conroler) async {
             demofacecontroller = conroler;
+
             demofacecontroller.init();
+            final String textureBytes = "assets/fox_face_mesh_texture.png";
+            var texture ;
+            texture = await rootBundle.load(textureBytes);
+            String data;
+            // if(count == 1){
+            data ="fox_face.sfb";
+            demofacecontroller.loadmesh(texture,data);
           },
             ),
            /* Positioned(
@@ -107,7 +115,7 @@ int count = 0;
                   onPressed: (){
                     if(demofacecontroller!=null){
                       count ++;
-                      demofacecontroller.loadmesh(count);
+                      demofacecontroller.capture();
                     }
                   },
                   color: Colors.blueGrey,
