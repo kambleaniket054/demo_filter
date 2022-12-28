@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo_filter.iml" filepath="$PROJECT_DIR$/.idea/modules/demo_filter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo_filter.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/demo_filter.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo_filter.main.iml" filepath="$PROJECT_DIR$/.idea/modules/demo_filter.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo_filter.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/demo_filter.unitTest.iml" />
+    </modules>
+  </component>
+</project>

@@ -6,11 +6,11 @@ class Demofacecontroller {
   //late StringResultHandler onError;
   Demofacecontroller(int id) {
     _channel = MethodChannel("demo_filter$id");
-    _channel.setMethodCallHandler(_handleMethodCalls);
+    _channel.setMethodCallHandler((call) => handleMethodCalls(call));
     init();
   }
 
-  Future<dynamic> _handleMethodCalls(MethodCall call) async {
+  Future<void>handleMethodCalls(MethodCall call) async {
     switch (call.method) {
       case 'success':
         print("success : ${call.arguments}");
@@ -20,16 +20,17 @@ class Demofacecontroller {
         // onError(call.arguments);
         break;
       default:
+        print('Unknown method ${call.method}, ${call.arguments}');
       /* if (debug) {
           print('Unknown method ${call.method}');
         }*/
-        return Future.value();
     }
   }
 
   void init() async {
     try {
-      await _channel.invokeMethod("init", "");
+     var data = await _channel.invokeMethod("init", "");
+     print("init responce "+data);
     } on Exception catch (e) {
       print(e.toString());
     }
@@ -38,23 +39,25 @@ class Demofacecontroller {
 
   void capture() async {
     try {
-      await _channel.invokeMethod("capture",["true"]);
+      var data =   await _channel.invokeMethod("record",{"onoff":"true"});
+      print("capture responce "+data);
     }on Exception catch(e){
       print(e.toString());
     }
   }
 
-  void loadmesh(int count)async{
-    var data;
-    if(count == 1){
-      data = "toucan.sfb";
-    }
-    else{
-      data = "fox_face.sfb";
-    }
+  void loadmesh(ByteData? count,String data)async{
+
+    // }
+    // else{
+    //   data = 'fox_face.sfb';
+    // }
+    //  final String textureBytes = "assets/fox_face_mesh_texture.png";
+    // final ByteData texture = await rootBundle.load(count);
     try {
       await _channel.invokeMethod("loadmesh",{
-        'skin3DModelFilename': data
+        'skin3DModelFilename': data,
+        'texturedata' : count?.buffer.asUint8List()
       });
     }on Exception catch(e){
       print(e.toString());
