@@ -4,10 +4,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.media.CamcorderProfile;
+import android.media.Image;
 import android.net.Uri;
-import android.opengl.GLES20;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,10 +19,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 
+import com.google.ar.core.Anchor;
 import com.google.ar.core.AugmentedFace;
 import com.google.ar.core.CameraConfig;
 import com.google.ar.core.CameraConfigFilter;
 import com.google.ar.core.Config;
+import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
@@ -29,25 +33,29 @@ import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
+import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.FrameTime;
-import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.Scene;
-import com.google.ar.sceneform.animation.ModelAnimator;
-import com.google.ar.sceneform.collision.CollisionShape;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.AnimationData;
 import com.google.ar.sceneform.rendering.ModelRenderable;
-
 import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.Texture;
 import com.google.ar.sceneform.ux.AugmentedFaceNode;
-import com.google.ar.sceneform.ux.TransformableNode;
-import com.google.ar.sceneform.ux.TransformationSystem;
 
-import java.io.ByteArrayInputStream;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfRect;
+import org.opencv.core.Rect;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -77,6 +85,20 @@ public class demo_faceview implements PlatformView, MethodChannel.MethodCallHand
     public demo_faceview(Activity activity1, int viewId, BinaryMessenger msg, Context context)  {
         this.context = context;
         this.activity1 = activity1;
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, activity1.getApplicationContext(), new BaseLoaderCallback(activity1.getApplicationContext()) {
+            @Override
+            public void onManagerConnected(int status) {
+//                super.onManagerConnected(status);
+                switch (status){
+                    case LoaderCallbackInterface.SUCCESS:
+                        System.loadLibrary("Open-android10");
+                        break;
+                    default:
+                        super.onManagerConnected(status);
+                        break;
+                }
+            }
+        });
         try {
             arSceneView = new ArSceneView(activity1);
             ActivityCompat.requestPermissions(activity1,new String[]{Manifest.permission.CAMERA},0x123);
@@ -94,6 +116,9 @@ public class demo_faceview implements PlatformView, MethodChannel.MethodCallHand
             session.setCameraConfig(cameraConfigs.get(0));
 
             arSceneView.setupSession(session);
+
+          // arSceneView.getPlaneRenderer().getMaterial().;
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -113,7 +138,6 @@ public class demo_faceview implements PlatformView, MethodChannel.MethodCallHand
                     if (!facenode.containsKey(face)) {
                         AugmentedFaceNode facesetnode = new AugmentedFaceNode(face);
                        face.getMeshVertices();
-
                         facesetnode.setParent(arSceneView.getScene());
                         facesetnode.setAugmentedFace(face);
                         facesetnode.setFaceRegionsRenderable(facerender);
@@ -264,7 +288,7 @@ public class demo_faceview implements PlatformView, MethodChannel.MethodCallHand
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
         if (call.method.equals("init")){
-           // loadmesh(call.arguments);
+            loadmesh(call.arguments);
             arviewset(call,result);
         }
         else if(call.method.equals("loadmesh")){
@@ -306,13 +330,109 @@ public class demo_faceview implements PlatformView, MethodChannel.MethodCallHand
 
     private void loadmesh(Object arguments) {
         try {
-           // String data = "";
+            String data = "";
+//            Map<String, String> map = (HashMap<String, String>) arguments;
+//            String data = (String) map.get("skin3DModelFilename");
+//            String textureBytes = (String) map.get("texture");
+//
+//            File file  = File.createTempFile("modeldata", null, context.getCacheDir());
+
+//            DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+//            Uri uri = Uri.parse("URL of file to download");
+//            DownloadManager.Request request = new DownloadManager.Request(uri);
+//            request.setVisibleInDownloadsUi(true);
+//            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+//            request.set(Environment.DIRECTORY_DOWNLOADS, uri.getLastPathSegment());
+//            downloadManager.enqueue(request);
+//            String data = "";
         //String texture1 = "https://github.com/giandifra/arcore_flutter_plugin/blob/master/example/assets/fox_face_mesh_texture.png";
-       Map map = (HashMap<String, String>) arguments;
-        String data = (String) map.get("skin3DModelFilename");
-        byte[] textureBytes = (byte[]) map.get("texturedata");
-       if(data!=null){
-           ModelRenderable.builder().setSource(activity1, Uri.parse(data)).setRegistryId(data).build().thenAccept(
+//             RequestQueue volley = Volley.newRequestQueue(context);
+//             String url = data;
+
+//            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+//                    Request.Method.GET,
+//                    url,
+//                    null,
+//                    (Response.Listener<JSONObject>) response -> {
+//                        String dogImageUrl;
+//                        try {
+//                            dogImageUrl = response.getString("message");
+//                            try (FileOutputStream stream = new FileOutputStream(file)) {
+//                                try {
+//                                    stream.write(dogImageUrl.getBytes());
+//                                } finally {
+//                                    stream.close();
+//                                }
+//                            }
+//                            catch (Exception e){
+//                                e.printStackTrace();
+//                            }
+//                            // load the image into the ImageView using Glide.
+////                            Glide.with(MainActivity.this).load(dogImageUrl).into(mDogImageView);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    },
+//
+//                    // lambda function for handling the case
+//                    // when the HTTP request fails
+//                    (Response.ErrorListener) error -> {
+//                        // make a Toast telling the user
+//                        // that something went wrong
+//                        Toast.makeText(context, "Some error occurred! Cannot fetch dog image", Toast.LENGTH_LONG).show();
+//                        // log the error message in the error stream
+//                        Log.e("MainActivity", "loadDogImage error: ${error.localizedMessage}");
+//                    }
+//            );
+//            volley.add(jsonObjectRequest);
+
+//            RenderableSource.builder().setSource(activity1,Uri.parse("https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF/Duck.gltf"), RenderableSource.SourceType.GLTF2).build()
+//       if(data!=null){
+            Mat gray = new Mat();
+//
+            Frame frame = arSceneView.getArFrame();
+//
+//            if (frame == null) {
+//                return;
+//            }
+//
+//            // Get the camera image
+            Image image = frame.acquireCameraImage();
+//
+//            if (image == null) {
+//                return;
+//            }
+//
+//            // Convert the image to Mat format
+            int width = image.getWidth();
+            int height = image.getHeight();
+            ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+            byte[] bytes = new byte[buffer.remaining()];
+            buffer.get(bytes);
+            Mat yuvMat = new Mat(height + height / 2, width, CvType.CV_8UC1);
+            yuvMat.put(0, 0, bytes);
+            Imgproc.cvtColor(yuvMat, gray, Imgproc.COLOR_YUV2RGBA_NV21);
+//
+//            // Release the camera image
+            image.close();
+//
+            CascadeClassifier cascadeClassifier = new CascadeClassifier("haarcascade_hair.xml");
+            MatOfRect hairRects = new MatOfRect();
+            cascadeClassifier.detectMultiScale(gray, hairRects);
+            Rect hairRect = hairRects.toList().get(0);
+            float[] hairPosition = new float[]{(hairRect.x + hairRect.width / 2) / (float) yuvMat.width(),
+                    (hairRect.y + hairRect.height / 2) / (float) yuvMat.height(), -0.2f};
+            float scaleFactor = hairRect.width / 0.1f; // Scale hair model to size of hair in image
+            float[] hairRotation = new float[]{0f, 0f, 0f, 1f};
+            Anchor anchor =  arSceneView.getSession().createAnchor(new Pose(new float[]{0,0,0}, new float[]{0, 0, 0, 1}));
+
+            AnchorNode anchorNode = new AnchorNode(anchor);
+            anchorNode.setParent(arSceneView.getScene());
+//            Frame frame1
+//            TransformableNode hairNode = new TransformableNode(arSceneView.getScene().getView().getRenderer().getContext);
+//            hairNode.setParent(anchorNode);
+
+            ModelRenderable.builder().setSource(activity1,Uri.parse(data)).setRegistryId(data).build().thenAccept(
                    modelRenderable -> {
                        AnimationData danceData = null;
                        facerender = modelRenderable;
@@ -344,18 +464,23 @@ public class demo_faceview implements PlatformView, MethodChannel.MethodCallHand
                        return null;
                    }
            );
-       }
-            if (textureBytes != null) {
-                Texture.builder().setSource(BitmapFactory.decodeByteArray(textureBytes,0,textureBytes.length)).build().thenAccept(
-                        texture -> {
-                            facetexture = texture;
-                        }
-                );
-            }
+//       }
+//            if (textureBytes != null) {
+//            URL u = new URL("https://github.com/kambleaniket054/database/blob/main/native_face.png");
+//            byte[] imageBytes = IOUtils.toByteArray(u.openStream());
+//            new loadimage().execute("https://github.com/kambleaniket054/database/blob/main/native_face.png");
+//            Bitmap texte = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.getContentResolver(), Uri.parse("https://github.com/kambleaniket054/database/blob/main/native_face.png")));
+//                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                texte.compress(Bitmap.CompressFormat.JPEG,80,stream);
+//                byte[] byteArray = stream.toByteArray();
+//                Bitmap compressedBitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
+               // ivCompressed.setImageBitmap(compressedBitmap);
+
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(activity1,e.toString(),Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity1,"error data"+e.toString(),Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -381,4 +506,40 @@ public class demo_faceview implements PlatformView, MethodChannel.MethodCallHand
     public void dispose() {
 
     }
+
+
+    class loadimage extends AsyncTask<String, Void, Bitmap>{
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            Bitmap texte = null;
+            try {
+                texte = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.getContentResolver(), Uri.parse("https://github.com/kambleaniket054/database/blob/main/native_face.png")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return texte;
+        }
+
+        @Override
+       protected void onPostExecute(Bitmap bitmap) {
+            Toast.makeText(activity1.getApplicationContext(),
+                    "ByteArray created new..",
+                    Toast.LENGTH_SHORT).show();
+
+            Texture.builder().setSource(bitmap).setRegistryId(bitmap).build().thenAccept(
+                    texture -> {
+                        facetexture = texture;
+                        Log.e("success","load texture successful");
+                    }
+            ).exceptionally(
+                    throwable -> {
+                        Toast.makeText(activity1,"error texture",Toast.LENGTH_SHORT).show();
+                        Log.e("error","unable to load texture",throwable);
+                        return null;
+                    }
+            );
+       }
+   }
 }

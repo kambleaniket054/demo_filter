@@ -1,1 +1,3 @@
 rootProject.name = 'demo_filter'
+
+include ':OpenCV-android10'

@@ -46,7 +46,7 @@ class Demofacecontroller {
     }
   }
 
-  void loadmesh(ByteData? count,String data)async{
+  void loadmesh(var count,var data)async{
 
     // }
     // else{
@@ -57,7 +57,7 @@ class Demofacecontroller {
     try {
       await _channel.invokeMethod("loadmesh",{
         'skin3DModelFilename': data,
-        'texturedata' : count?.buffer.asUint8List()
+        'texturedata' : count
       });
     }on Exception catch(e){
       print(e.toString());
