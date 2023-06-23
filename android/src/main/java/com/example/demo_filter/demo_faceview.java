@@ -44,15 +44,15 @@ import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.Texture;
 import com.google.ar.sceneform.ux.AugmentedFaceNode;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfRect;
-import org.opencv.core.Rect;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.CascadeClassifier;
+//import org.opencv.android.BaseLoaderCallback;
+//import org.opencv.android.LoaderCallbackInterface;
+//import org.opencv.android.OpenCVLoader;
+//import org.opencv.core.CvType;
+//import org.opencv.core.Mat;
+//import org.opencv.core.MatOfRect;
+//import org.opencv.core.Rect;
+//import org.opencv.imgproc.Imgproc;
+//import org.opencv.objdetect.CascadeClassifier;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -85,20 +85,20 @@ public class demo_faceview implements PlatformView, MethodChannel.MethodCallHand
     public demo_faceview(Activity activity1, int viewId, BinaryMessenger msg, Context context)  {
         this.context = context;
         this.activity1 = activity1;
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, activity1.getApplicationContext(), new BaseLoaderCallback(activity1.getApplicationContext()) {
-            @Override
-            public void onManagerConnected(int status) {
-//                super.onManagerConnected(status);
-                switch (status){
-                    case LoaderCallbackInterface.SUCCESS:
-                        System.loadLibrary("Open-android10");
-                        break;
-                    default:
-                        super.onManagerConnected(status);
-                        break;
-                }
-            }
-        });
+//        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, activity1.getApplicationContext(), new BaseLoaderCallback(activity1.getApplicationContext()) {
+//            @Override
+//            public void onManagerConnected(int status) {
+////                super.onManagerConnected(status);
+//                switch (status){
+//                    case LoaderCallbackInterface.SUCCESS:
+//                        System.loadLibrary("Open-android10");
+//                        break;
+//                    default:
+//                        super.onManagerConnected(status);
+//                        break;
+//                }
+//            }
+//        });
         try {
             arSceneView = new ArSceneView(activity1);
             ActivityCompat.requestPermissions(activity1,new String[]{Manifest.permission.CAMERA},0x123);
@@ -388,42 +388,42 @@ public class demo_faceview implements PlatformView, MethodChannel.MethodCallHand
 
 //            RenderableSource.builder().setSource(activity1,Uri.parse("https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF/Duck.gltf"), RenderableSource.SourceType.GLTF2).build()
 //       if(data!=null){
-            Mat gray = new Mat();
+//            Mat gray = new Mat();
 //
-            Frame frame = arSceneView.getArFrame();
+//            Frame frame = arSceneView.getArFrame();
 //
 //            if (frame == null) {
 //                return;
 //            }
 //
 //            // Get the camera image
-            Image image = frame.acquireCameraImage();
+//            Image image = frame.acquireCameraImage();
 //
 //            if (image == null) {
 //                return;
 //            }
 //
 //            // Convert the image to Mat format
-            int width = image.getWidth();
-            int height = image.getHeight();
-            ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-            byte[] bytes = new byte[buffer.remaining()];
-            buffer.get(bytes);
-            Mat yuvMat = new Mat(height + height / 2, width, CvType.CV_8UC1);
-            yuvMat.put(0, 0, bytes);
-            Imgproc.cvtColor(yuvMat, gray, Imgproc.COLOR_YUV2RGBA_NV21);
-//
-//            // Release the camera image
-            image.close();
-//
-            CascadeClassifier cascadeClassifier = new CascadeClassifier("haarcascade_hair.xml");
-            MatOfRect hairRects = new MatOfRect();
-            cascadeClassifier.detectMultiScale(gray, hairRects);
-            Rect hairRect = hairRects.toList().get(0);
-            float[] hairPosition = new float[]{(hairRect.x + hairRect.width / 2) / (float) yuvMat.width(),
-                    (hairRect.y + hairRect.height / 2) / (float) yuvMat.height(), -0.2f};
-            float scaleFactor = hairRect.width / 0.1f; // Scale hair model to size of hair in image
-            float[] hairRotation = new float[]{0f, 0f, 0f, 1f};
+//            int width = image.getWidth();
+//            int height = image.getHeight();
+//            ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+//            byte[] bytes = new byte[buffer.remaining()];
+//            buffer.get(bytes);
+//            Mat yuvMat = new Mat(height + height / 2, width, CvType.CV_8UC1);
+//            yuvMat.put(0, 0, bytes);
+//            Imgproc.cvtColor(yuvMat, gray, Imgproc.COLOR_YUV2RGBA_NV21);
+////
+////            // Release the camera image
+//            image.close();
+////
+//            CascadeClassifier cascadeClassifier = new CascadeClassifier("haarcascade_hair.xml");
+//            MatOfRect hairRects = new MatOfRect();
+//            cascadeClassifier.detectMultiScale(gray, hairRects);
+//            Rect hairRect = hairRects.toList().get(0);
+//            float[] hairPosition = new float[]{(hairRect.x + hairRect.width / 2) / (float) yuvMat.width(),
+//                    (hairRect.y + hairRect.height / 2) / (float) yuvMat.height(), -0.2f};
+//            float scaleFactor = hairRect.width / 0.1f; // Scale hair model to size of hair in image
+//            float[] hairRotation = new float[]{0f, 0f, 0f, 1f};
             Anchor anchor =  arSceneView.getSession().createAnchor(new Pose(new float[]{0,0,0}, new float[]{0, 0, 0, 1}));
 
             AnchorNode anchorNode = new AnchorNode(anchor);
